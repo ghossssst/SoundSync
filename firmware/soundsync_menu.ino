@@ -37,6 +37,7 @@ int buttontoggle = 0;
 int menuselected = 0;
 int longpress = 0;
 int timedelay = 0;
+int synctimer = 0;
 float timedif = 0;
 uint16_t maindiscolor = 0xffff;
 bool choosemenu = false;
@@ -62,24 +63,31 @@ void loop()
     screensetupfn2();
     while (buttontoggle==1) 
     {
-      if (analogRead(leftsensorPin)>0 && analogRead(rightsensorPin)>0)
+      while (synctimer < 7)
       {
-        disamber();
-        while (timedelay < 5000000 && buttontoggle == 1)
+        if (analogRead(leftsensorPin)>0 && analogRead(rightsensorPin)>0)
         {
-          timedelay = timedelay+1;
-          if (digitalRead(buttonPin) == LOW) 
-          {    //If the button is pressed 
-            buttontoggle = 0;
-            while (digitalRead(buttonPin) == LOW)
-            {
-              delay(1);
+          disamber();
+          while (timedelay < 5000000 && buttontoggle == 1)
+          {
+            timedelay = timedelay+1;
+            if (digitalRead(buttonPin) == LOW) 
+            {    //If the button is pressed 
+              buttontoggle = 0;
+              while (digitalRead(buttonPin) == LOW)
+              {
+                delay(1);
+              }
+              startup = false; 
             }
-            startup = false; 
           }
+          timedelay = 0;
+          screen.fillRect(9, 0, 151, 128, 0x0000);
         }
-        timedelay = 0;
-        screen.fillRect(9, 0, 151, 128, 0x0000);
+        else 
+        {
+          synctimer = synctimer+1;
+        }
       }
 
       if (analogRead(leftsensorPin)>0)
@@ -120,7 +128,10 @@ void loop()
         }
         timedelay = 0;
         screen.fillRect(9, 0, 151, 128, 0x0000);
+        
       }
+
+      synctimer = 0;
 
       if (digitalRead(buttonPin) == LOW) 
       {    //If the button is pressed ;
@@ -167,24 +178,31 @@ void loop()
       screensetupfn2();
       while (buttontoggle==1) 
       {
-        if (analogRead(leftsensorPin)>0 && analogRead(rightsensorPin)>0)
+        while (synctimer < 7)
         {
-          disamber();
-          while (timedelay < 5000000 && buttontoggle == 1)
+          if (analogRead(leftsensorPin)>0 && analogRead(rightsensorPin)>0)
           {
-            timedelay = timedelay+1;
-            if (digitalRead(buttonPin) == LOW) 
-            {    //If the button is pressed 
-              buttontoggle = 0;
-              while (digitalRead(buttonPin) == LOW)
-              {
-                delay(1);
+            disamber();
+            while (timedelay < 5000000 && buttontoggle == 1)
+            {
+              timedelay = timedelay+1;
+              if (digitalRead(buttonPin) == LOW) 
+              {    //If the button is pressed 
+                buttontoggle = 0;
+                while (digitalRead(buttonPin) == LOW)
+                {
+                  delay(1);
+                }
+                startup = false; 
               }
-              startup = false; 
             }
+            timedelay = 0;
+            screen.fillRect(9, 0, 151, 128, 0x0000);
           }
-          timedelay = 0;
-          screen.fillRect(9, 0, 151, 128, 0x0000);
+          else 
+          {
+            synctimer = synctimer+1;
+          }
         }
 
         if (analogRead(leftsensorPin)>0)
@@ -226,6 +244,8 @@ void loop()
           timedelay = 0;
           screen.fillRect(9, 0, 151, 128, 0x0000);
         }
+
+        synctimer = 0;
 
         if (digitalRead(buttonPin) == LOW) 
         {    //If the button is pressed ;
