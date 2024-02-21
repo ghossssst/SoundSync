@@ -35,11 +35,14 @@ int lefttimestamp = 0;
 int righttimestamp = 0;
 int buttontoggle = 0;
 int menuselected = 0;
+int settingsmenuselected = 0;
 int longpress = 0;
 int timedelay = 0;
 int synctimer = 0;
 float timedif = 0;
 uint16_t maindiscolor = 0xffff;
+bool settingsexit = false;
+bool settingschoosemenu = false;
 bool choosemenu = false;
 bool startup = true;
 
@@ -63,7 +66,7 @@ void loop()
     screensetupfn2();
     while (buttontoggle==1) 
     {
-      while (synctimer < 7)
+      while (synctimer < 5)
       {
         if (analogRead(leftsensorPin)>0 && analogRead(rightsensorPin)>0)
         {
@@ -147,6 +150,10 @@ void loop()
     }
   }
 
+
+
+
+
   if (digitalRead(buttonPin) == LOW)
   {
     while (digitalRead(buttonPin) == LOW && longpress < 400)
@@ -178,7 +185,7 @@ void loop()
       screensetupfn2();
       while (buttontoggle==1) 
       {
-        while (synctimer < 7)
+        while (synctimer < 5)
         {
           if (analogRead(leftsensorPin)>0 && analogRead(rightsensorPin)>0)
           {
@@ -408,14 +415,190 @@ void loop()
 
     if (choosemenu == true && menuselected == 3)
     {
-      while (digitalRead(buttonPin) == HIGH)
+      Serial.println("Settings");
+      screen.fillRect(0, 0, 9, 130, maindiscolor);
+      settingsdisplay();
+      while (settingsexit == false)
       {
-        delay(1);
+        if (digitalRead(buttonPin) == LOW)
+        {
+          while (digitalRead(buttonPin) == LOW && longpress < 400)
+          {
+            delay(1);
+
+            longpress = longpress + 1;
+
+            if (longpress > 399)
+            {
+              screen.fillScreen(COLOR_RGB565_BLACK);
+              Serial.println("button longpressed");
+              settingschoosemenu = true;
+            }
+          }
+
+          screen.fillRect(109, 0, 51, 128, 0x0000);
+
+          longpress = 0;
+
+          while (digitalRead(buttonPin) == LOW)
+          {
+            delay(1);
+          }
+
+          if (settingschoosemenu == true && settingsmenuselected == 0)
+          {
+            Serial.println("Synchronizer Lenity");
+            buttontoggle=1;
+            screendatatext();
+            while (buttontoggle==1) 
+            {
+              screen.setRotation(2);
+
+              screen.fillRect( 2, 12, screen.width(), 10, 0x0000);
+              screen.setTextSize(1);
+              screen.setTextColor(0xffff); 
+              screen.setCursor(2, 12);
+              screen.println(analogRead(leftsensorPin));
+
+              screen.fillRect( 2, 32, screen.width(), 10, 0x0000);
+              screen.setTextSize(1);
+              screen.setTextColor(0xffff); 
+              screen.setCursor(2, 32);
+              screen.println(analogRead(rightsensorPin));
+
+              screen.fillRect( 2, 52, screen.width(), 10, 0x0000);
+              screen.setTextSize(1);
+              screen.setTextColor(0xffff); 
+              screen.setCursor(2, 52);
+              screen.println(millis());
+
+              delay(10); 
+
+              screen.setRotation(1);       
+
+              if (digitalRead(buttonPin) == LOW) 
+              {    //If the button is pressed 
+                Serial.println("button pressed");
+                buttontoggle = 0;
+                while (digitalRead(buttonPin) == LOW)
+                {
+                  delay(1);
+                }
+                screen.fillScreen(COLOR_RGB565_BLACK);
+                Serial.println(buttontoggle);
+              } 
+            }
+          }
+
+          if (settingschoosemenu == true && settingsmenuselected == 1)
+          {
+            Serial.println("Audio Sensitivity");
+            while (digitalRead(buttonPin) == HIGH)
+            {
+              delay(1);
+            }
+            Serial.println("sleep");
+            buttontoggle=1;
+            esp_deep_sleep_start();
+          }
+
+          if (settingschoosemenu == true && settingsmenuselected == 2)
+          {
+            settingsexit = true;
+          }
+
+          if (settingsmenuselected == 2)
+          {
+            settingsmenuselected = settingsmenuselected-2;
+          } else {
+            settingsmenuselected = settingsmenuselected+1;  
+          }
+          screen.fillRect(0, 0, 9, 130, maindiscolor);
+          settingschoosemenu = false;
+        }
+
+        if (settingsmenuselected == 0 && settingsexit == false)
+        {
+          screen.setRotation(2);
+
+          screen.setTextSize(1);
+          screen.setTextColor(0xffff); 
+          screen.setCursor(2, 2);
+          screen.println(">Synchronizer Lenity:");
+
+          screen.drawRect(2, 12, 126, 8, maindiscolor);
+
+          screen.setCursor(2, 22);
+          screen.println("Audio Sensitivity");
+
+          screen.drawRect(2, 32, 126, 8, maindiscolor);
+
+          screen.setCursor(2, 42);
+          screen.println("Return to menu");
+
+          screen.setCursor(2, 152);
+          screen.setTextColor(0x0000); 
+          screen.println("SETTINGS MENU: OPT 1");
+
+          screen.setRotation(1);
+        }
+
+        if (settingsmenuselected == 1 && settingsexit == false)
+        {
+          screen.setRotation(2);
+
+          screen.setTextSize(1);
+          screen.setTextColor(0xffff); 
+          screen.setCursor(2, 2);
+          screen.println("Synchronizer Lenity:");
+
+          screen.drawRect(2, 12, 126, 8, maindiscolor);
+
+          screen.setCursor(2, 22);
+          screen.println(">Audio Sensitivity:");
+
+          screen.drawRect(2, 32, 126, 8, maindiscolor);
+
+          screen.setCursor(2, 42);
+          screen.println("Return to menu");
+
+          screen.setCursor(2, 152);
+          screen.setTextColor(0x0000); 
+          screen.println("SETTINGS MENU: OPT 2");
+
+          screen.setRotation(1);
+        }
+
+        if (settingsmenuselected == 2 && settingsexit == false)
+        {
+          screen.setRotation(2);
+
+          screen.setTextSize(1);
+          screen.setTextColor(0xffff); 
+          screen.setCursor(2, 2);
+          screen.println("Synchronizer Lenity:");
+
+          screen.drawRect(2, 12, 126, 8, maindiscolor);
+
+          screen.setCursor(2, 22);
+          screen.println("Audio Sensitivity:");
+
+          screen.drawRect(2, 32, 126, 8, maindiscolor);
+
+          screen.setCursor(2, 42);
+          screen.println(">Return to menu");
+
+          screen.setCursor(2, 152);
+          screen.setTextColor(0x0000); 
+          screen.println("SETTINGS MENU: OPT 3");
+
+          screen.setRotation(1);
+        }
       }
-      Serial.println("sleep");
-      buttontoggle=1;
-      esp_deep_sleep_start();
+      settingsexit = false;
+      screen.fillRect(109, 0, 51, 128, 0x0000);
     }
+    
 
     if (menuselected == 3)
     {
@@ -446,7 +629,7 @@ void loop()
 
     screen.setTextColor(0xffff); 
     screen.setCursor(2, 32);
-    screen.println("Sleep");
+    screen.println("Settings");
 
     screen.setCursor(2, 152);
     screen.setTextColor(0x0000); 
@@ -474,7 +657,7 @@ void loop()
 
     screen.setTextColor(0xffff); 
     screen.setCursor(2, 32);
-    screen.println("Sleep");
+    screen.println("Settings");
 
     screen.setCursor(2, 152);
     screen.setTextColor(0x0000); 
@@ -502,7 +685,7 @@ void loop()
 
     screen.setTextColor(0xffff); 
     screen.setCursor(2, 32);
-    screen.println("Sleep");
+    screen.println("Settings");
 
     screen.setCursor(2, 152);
     screen.setTextColor(0x0000); 
@@ -530,7 +713,7 @@ void loop()
 
     screen.setTextColor(0xffff); 
     screen.setCursor(2, 32);
-    screen.println(">Sleep");
+    screen.println(">Settings");
 
     screen.setCursor(2, 152);
     screen.setTextColor(0x0000); 
@@ -677,6 +860,32 @@ void screendatatext()
   screen.setRotation(2);
 }
 
+void settingsdisplay()
+{
+  screen.setRotation(2);
+
+  screen.setTextSize(1);
+  screen.setTextColor(0xffff); 
+  screen.setCursor(2, 2);
+  screen.println(">Synchronizer Lenity:");
+
+  screen.drawRect(2, 12, 126, 8, maindiscolor);
+
+  screen.setCursor(2, 22);
+  screen.println("Audio Sensitivity");
+
+  screen.drawRect(2, 32, 126, 8, maindiscolor);
+
+  screen.setCursor(2, 42);
+  screen.println("Return to menu");
+
+  screen.setCursor(2, 152);
+  screen.setTextColor(0x0000); 
+  screen.println("SETTINGS MENU: OPT 1");
+
+  screen.setRotation(1);
+}
+
 void screentext()
 {
   screen.setRotation(2);
@@ -725,3 +934,4 @@ void disamber()
   screen.setTextSize(0);
   screen.setRotation(1);
 }
+
