@@ -39,6 +39,8 @@ int settingsmenuselected = 0;
 int longpress = 0;
 int timedelay = 0;
 int synctimer = 0;
+float audiosens = 0;
+float synclenity = 24.50;
 float timedif = 0;
 uint16_t maindiscolor = 0xffff;
 bool settingsexit = false;
@@ -66,9 +68,9 @@ void loop()
     screensetupfn2();
     while (buttontoggle==1) 
     {
-      while (synctimer < 5)
+      while (synctimer < synclenity+1)
       {
-        if (analogRead(leftsensorPin)>0 && analogRead(rightsensorPin)>0)
+        if (analogRead(leftsensorPin)>audiosens && analogRead(rightsensorPin)>audiosens)
         {
           disamber();
           while (timedelay < 5000000 && buttontoggle == 1)
@@ -93,7 +95,7 @@ void loop()
         }
       }
 
-      if (analogRead(leftsensorPin)>0)
+      if (analogRead(leftsensorPin)>audiosens)
       {
         disgreen();
         while (timedelay < 5000000 && buttontoggle == 1)
@@ -113,7 +115,7 @@ void loop()
         screen.fillRect(9, 0, 151, 128, 0x0000);
       }
 
-      if (analogRead(rightsensorPin)>0)
+      if (analogRead(rightsensorPin)>audiosens)
       {
         disred();
         while (timedelay < 5000000 && buttontoggle == 1)
@@ -185,9 +187,9 @@ void loop()
       screensetupfn2();
       while (buttontoggle==1) 
       {
-        while (synctimer < 5)
+        while (synctimer < synclenity+1)
         {
-          if (analogRead(leftsensorPin)>0 && analogRead(rightsensorPin)>0)
+          if (analogRead(leftsensorPin)>audiosens && analogRead(rightsensorPin)>audiosens)
           {
             disamber();
             while (timedelay < 5000000 && buttontoggle == 1)
@@ -212,7 +214,7 @@ void loop()
           }
         }
 
-        if (analogRead(leftsensorPin)>0)
+        if (analogRead(leftsensorPin)>audiosens)
         {
           disgreen();
           while (timedelay < 5000000 && buttontoggle == 1)
@@ -232,7 +234,7 @@ void loop()
           screen.fillRect(9, 0, 151, 128, 0x0000);
         }
 
-        if (analogRead(rightsensorPin)>0)
+        if (analogRead(rightsensorPin)>audiosens)
         {
           disred();
           while (timedelay < 5000000 && buttontoggle == 1)
@@ -278,19 +280,19 @@ void loop()
 
         timedif = 0;
 
-        sonograph();
-
-        if (analogRead(leftsensorPin)>analogRead(rightsensorPin))
+        if ((analogRead(leftsensorPin)>analogRead(rightsensorPin)) && (analogRead(leftsensorPin)>audiosens))
         {
           //Serial.println("left wins");
           screen.drawFastVLine(dline, 54, 20, 0x07e0);
         }
 
-        if (analogRead(rightsensorPin)>analogRead(leftsensorPin))
+        if ((analogRead(rightsensorPin)>analogRead(leftsensorPin)) && (analogRead(rightsensorPin)>audiosens))
         {
           //Serial.println("right wins");
           screen.drawFastVLine(dline, 54, 20, 0xf800);
         }
+
+        sonograph();
 
         if (lclockcycle>0)
         {
@@ -312,13 +314,13 @@ void loop()
             screen.fillRect(150, 80, 10, 39, maindiscolor);
         }
 
-        if (analogRead(leftsensorPin)>0 && lclockcycle==0)
+        if (analogRead(leftsensorPin)>audiosens && lclockcycle==0)
         {
           lefttimestamp = millis();
           lclockcycle = 100;
         }
 
-        if (analogRead(rightsensorPin)>0 && rclockcycle==0)
+        if (analogRead(rightsensorPin)>audiosens && rclockcycle==0)
         {
           righttimestamp = millis();
           rclockcycle = 100;
@@ -440,66 +442,154 @@ void loop()
 
           longpress = 0;
 
-          while (digitalRead(buttonPin) == LOW)
-          {
-            delay(1);
-          }
-
           if (settingschoosemenu == true && settingsmenuselected == 0)
           {
             Serial.println("Synchronizer Lenity");
             buttontoggle=1;
-            screendatatext();
-            while (buttontoggle==1) 
+            screen.fillRect(0, 0, 9, 130, maindiscolor);
+            screen.setRotation(2);
+
+            screen.setTextSize(1);
+            screen.setTextColor(0xffff); 
+            screen.setCursor(2, 2);
+            screen.println(">Synchronizer Lenity:");
+
+            screen.drawRect(2, 12, 126, 8, maindiscolor);
+            screen.drawRect(3, 13, 124, 6, maindiscolor);
+            screen.fillRect(4, 14, synclenity, 4, 0x7E0);
+
+            screen.setCursor(2, 22);
+            screen.println("Audio Sensitivity");
+
+            screen.drawRect(2, 32, 126, 8, maindiscolor);
+            screen.fillRect(4, 34, audiosens, 4, 0x7E0);
+
+            screen.setCursor(2, 42);
+            screen.println("Return to menu");
+
+            screen.setCursor(2, 152);
+            screen.setTextColor(0x0000); 
+            screen.println("SETTINGS MENU: OPT 1");
+
+            screen.setRotation(1);
+            while (digitalRead(buttonPin) == LOW)
             {
-              screen.setRotation(2);
-
-              screen.fillRect( 2, 12, screen.width(), 10, 0x0000);
-              screen.setTextSize(1);
-              screen.setTextColor(0xffff); 
-              screen.setCursor(2, 12);
-              screen.println(analogRead(leftsensorPin));
-
-              screen.fillRect( 2, 32, screen.width(), 10, 0x0000);
-              screen.setTextSize(1);
-              screen.setTextColor(0xffff); 
-              screen.setCursor(2, 32);
-              screen.println(analogRead(rightsensorPin));
-
-              screen.fillRect( 2, 52, screen.width(), 10, 0x0000);
-              screen.setTextSize(1);
-              screen.setTextColor(0xffff); 
-              screen.setCursor(2, 52);
-              screen.println(millis());
-
-              delay(10); 
-
-              screen.setRotation(1);       
-
+              delay(1);
+            }
+            while (buttontoggle==1) 
+            {     
               if (digitalRead(buttonPin) == LOW) 
               {    //If the button is pressed 
                 Serial.println("button pressed");
-                buttontoggle = 0;
-                while (digitalRead(buttonPin) == LOW)
+                while (digitalRead(buttonPin) == LOW && longpress < 400)
                 {
                   delay(1);
+
+                  longpress = longpress + 1;
+
+                  if (longpress > 399)
+                  {
+                    Serial.println("button longpressed");
+                    buttontoggle = 0;
+                    synclenity = synclenity - 12.25;
+                  }
                 }
-                screen.fillScreen(COLOR_RGB565_BLACK);
-                Serial.println(buttontoggle);
+
+                longpress = 0;
+
+                synclenity = synclenity + 12.25;
+                screen.setRotation(2); 
+                screen.drawRect(2, 12, 126, 8, maindiscolor);
+                screen.drawRect(3, 13, 124, 6, maindiscolor);
+                
+                if (synclenity > 128)
+                {
+                  synclenity = 0;                  
+                  screen.fillRect(2, 12, 126, 8, 0x0000);
+                  screen.drawRect(2, 12, 126, 8, maindiscolor);
+                  screen.drawRect(3, 13, 124, 6, maindiscolor);
+                }
+                screen.fillRect(4, 14, synclenity, 4, 0x7E0);
+                screen.setRotation(1);
+                Serial.println(synclenity);
               } 
             }
+            screen.fillScreen(COLOR_RGB565_BLACK);
           }
 
           if (settingschoosemenu == true && settingsmenuselected == 1)
           {
             Serial.println("Audio Sensitivity");
-            while (digitalRead(buttonPin) == HIGH)
+            buttontoggle=1;
+            screen.fillRect(0, 0, 9, 130, maindiscolor);
+            screen.setRotation(2);
+
+            screen.setTextSize(1);
+            screen.setTextColor(0xffff); 
+            screen.setCursor(2, 2);
+            screen.println("Synchronizer Lenity:");
+
+            screen.drawRect(2, 12, 126, 8, maindiscolor);
+            screen.fillRect(4, 14, synclenity, 4, 0x7E0);
+
+            screen.setCursor(2, 22);
+            screen.println(">Audio Sensitivity");
+
+            screen.drawRect(2, 32, 126, 8, maindiscolor);
+            screen.drawRect(3, 33, 124, 6, maindiscolor);
+            screen.fillRect(4, 34, audiosens/8.15, 4, 0x7E0);
+
+            screen.setCursor(2, 42);
+            screen.println("Return to menu");
+
+            screen.setCursor(2, 152);
+            screen.setTextColor(0x0000); 
+            screen.println("SETTINGS MENU: OPT 2");
+
+            screen.setRotation(1);
+            while (digitalRead(buttonPin) == LOW)
             {
               delay(1);
             }
-            Serial.println("sleep");
-            buttontoggle=1;
-            esp_deep_sleep_start();
+            while (buttontoggle==1) 
+            {     
+              if (digitalRead(buttonPin) == LOW) 
+              {    //If the button is pressed 
+                Serial.println("button pressed");
+                while (digitalRead(buttonPin) == LOW && longpress < 400)
+                {
+                  delay(1);
+
+                  longpress = longpress + 1;
+
+                  if (longpress > 399)
+                  {
+                    Serial.println("button longpressed");
+                    buttontoggle = 0;
+                    audiosens = audiosens - 100;
+                  }
+                }
+
+                longpress = 0;
+
+                audiosens = audiosens + 100;
+                screen.setRotation(2); 
+                screen.drawRect(2, 32, 126, 8, maindiscolor);
+                screen.drawRect(3, 33, 124, 6, maindiscolor);
+                
+                if (audiosens > 1000)
+                {
+                  audiosens = 0;                  
+                  screen.fillRect(2, 32, 126, 8, 0x0000);
+                  screen.drawRect(2, 32, 126, 8, maindiscolor);
+                  screen.drawRect(3, 33, 124, 6, maindiscolor);
+                }
+                screen.fillRect(4, 34, audiosens/8.15, 4, 0x7E0);
+                screen.setRotation(1);
+                Serial.println(audiosens);
+              } 
+            }
+            screen.fillScreen(COLOR_RGB565_BLACK);
           }
 
           if (settingschoosemenu == true && settingsmenuselected == 2)
@@ -513,6 +603,10 @@ void loop()
           } else {
             settingsmenuselected = settingsmenuselected+1;  
           }
+          while (digitalRead(buttonPin) == LOW)
+          {
+            delay(1);
+          }
           screen.fillRect(0, 0, 9, 130, maindiscolor);
           settingschoosemenu = false;
         }
@@ -522,16 +616,20 @@ void loop()
           screen.setRotation(2);
 
           screen.setTextSize(1);
-          screen.setTextColor(0xffff); 
+          screen.setTextColor(0x0000); 
           screen.setCursor(2, 2);
+          screen.fillRect(2, 1, 130, 9, maindiscolor);
           screen.println(">Synchronizer Lenity:");
+          screen.setTextColor(0xffff); 
 
           screen.drawRect(2, 12, 126, 8, maindiscolor);
+          screen.fillRect(4, 14, synclenity, 4, 0x7E0);
 
           screen.setCursor(2, 22);
           screen.println("Audio Sensitivity");
 
           screen.drawRect(2, 32, 126, 8, maindiscolor);
+          screen.fillRect(4, 34, audiosens/8.15, 4, 0x7E0);
 
           screen.setCursor(2, 42);
           screen.println("Return to menu");
@@ -541,6 +639,11 @@ void loop()
           screen.println("SETTINGS MENU: OPT 1");
 
           screen.setRotation(1);
+
+          while (digitalRead(buttonPin) != LOW)
+          {
+            delay(1);
+          }
         }
 
         if (settingsmenuselected == 1 && settingsexit == false)
@@ -553,11 +656,16 @@ void loop()
           screen.println("Synchronizer Lenity:");
 
           screen.drawRect(2, 12, 126, 8, maindiscolor);
+          screen.fillRect(4, 14, synclenity, 4, 0x7E0);
 
+          screen.fillRect(2, 21, 130, 9, maindiscolor);
           screen.setCursor(2, 22);
+          screen.setTextColor(0x0000); 
           screen.println(">Audio Sensitivity:");
+          screen.setTextColor(0xffff); 
 
           screen.drawRect(2, 32, 126, 8, maindiscolor);
+          screen.fillRect(4, 34, audiosens/8.15, 4, 0x7E0);
 
           screen.setCursor(2, 42);
           screen.println("Return to menu");
@@ -567,6 +675,11 @@ void loop()
           screen.println("SETTINGS MENU: OPT 2");
 
           screen.setRotation(1);
+
+          while (digitalRead(buttonPin) != LOW)
+          {
+            delay(1);
+          }
         }
 
         if (settingsmenuselected == 2 && settingsexit == false)
@@ -579,20 +692,30 @@ void loop()
           screen.println("Synchronizer Lenity:");
 
           screen.drawRect(2, 12, 126, 8, maindiscolor);
+          screen.fillRect(4, 14, synclenity, 4, 0x7E0);
 
           screen.setCursor(2, 22);
           screen.println("Audio Sensitivity:");
 
           screen.drawRect(2, 32, 126, 8, maindiscolor);
+          screen.fillRect(4, 34, audiosens/8.15, 4, 0x7E0);
 
+          screen.fillRect(2, 41, 130, 9, maindiscolor);
           screen.setCursor(2, 42);
+          screen.setTextColor(0x0000); 
           screen.println(">Return to menu");
+          screen.setTextColor(0xffff); 
 
           screen.setCursor(2, 152);
           screen.setTextColor(0x0000); 
           screen.println("SETTINGS MENU: OPT 3");
 
           screen.setRotation(1);
+
+          while (digitalRead(buttonPin) != LOW)
+          {
+            delay(1);
+          }
         }
       }
       settingsexit = false;
@@ -613,9 +736,9 @@ void loop()
   if (menuselected == 0)
   {
     screen.setRotation(2);
-
+    screen.fillRect(2, 1, 130, 9, maindiscolor);
     screen.setTextSize(1);
-    screen.setTextColor(0xffff); 
+    screen.setTextColor(0x0000); 
     screen.setCursor(2, 2);
     screen.println(">Audio synchroniser");
 
@@ -636,6 +759,11 @@ void loop()
     screen.println("MENU: PRGM 1");
 
     screen.setRotation(1);
+
+    while (digitalRead(buttonPin) != LOW)
+    {
+      delay(1);
+    }
   }
 
   if (menuselected == 1)
@@ -647,7 +775,8 @@ void loop()
     screen.setCursor(2, 2);
     screen.println("Audio synchroniser");
 
-    screen.setTextColor(0xffff); 
+    screen.fillRect(2, 11, 130, 9, maindiscolor);
+    screen.setTextColor(0x0000); 
     screen.setCursor(2, 12);
     screen.println(">Sonograph");
 
@@ -664,6 +793,11 @@ void loop()
     screen.println("MENU: PRGM 2");
 
     screen.setRotation(1);
+
+    while (digitalRead(buttonPin) != LOW)
+    {
+      delay(1);
+    }
   }
 
   if (menuselected == 2)
@@ -679,7 +813,8 @@ void loop()
     screen.setCursor(2, 12);
     screen.println("Sonograph");
 
-    screen.setTextColor(0xffff); 
+    screen.fillRect(2, 21, 130, 9, maindiscolor);
+    screen.setTextColor(0x0000); 
     screen.setCursor(2, 22);
     screen.println(">Raw Data Output");
 
@@ -692,6 +827,11 @@ void loop()
     screen.println("MENU: PRGM 3");
 
     screen.setRotation(1);
+
+    while (digitalRead(buttonPin) != LOW)
+    {
+      delay(1);
+    }
   }
 
   if (menuselected == 3)
@@ -711,7 +851,8 @@ void loop()
     screen.setCursor(2, 22);
     screen.println("Raw Data Output");
 
-    screen.setTextColor(0xffff); 
+    screen.fillRect(2, 31, 130, 9, maindiscolor);
+    screen.setTextColor(0x0000); 
     screen.setCursor(2, 32);
     screen.println(">Settings");
 
@@ -720,6 +861,11 @@ void loop()
     screen.println("MENU: PRGM 4");
 
     screen.setRotation(1);
+
+    while (digitalRead(buttonPin) != LOW)
+    {
+      delay(1);
+    }
   }
 }
 
@@ -770,13 +916,13 @@ void screensplash()
   screen.println("firmware version:");
   delay(50);
   screen.setCursor(2, 132);
-  screen.println("0.03.0");
+  screen.println("0.04.7");
   delay(50);
   screen.setCursor(2, 142);
   screen.println("code name:");
   delay(50);
   screen.setCursor(2, 152);
-  screen.println("power");
+  screen.println("control");
   delay(500);
 
   screen.setRotation(1);
@@ -830,6 +976,8 @@ void sonograph()
   screen.drawFastVLine(dline+2, 0, screen.height(), maindiscolor);
   screen.drawFastHLine(0, 54, 149, maindiscolor);
   screen.drawFastHLine(0, 74, 149, maindiscolor);
+  screen.drawFastHLine(0, audiosens/18.618, 149, maindiscolor);
+  screen.drawFastHLine(0, 127 - (audiosens/18.618), 149, maindiscolor);
 }
 
 void screendatatext()
@@ -934,4 +1082,3 @@ void disamber()
   screen.setTextSize(0);
   screen.setRotation(1);
 }
-
